@@ -1,5 +1,5 @@
 #include <stdio.h>
-#define N 5
+#define N 7
 int main()
 {
     int arr[N][N], count = 1, len = N, dir = 0, step = 1, a = 0, b = 0;
@@ -7,14 +7,12 @@ int main()
     {
         if (dir == 0)
         {
-            for (int i = 0; i < len; a += step, i++)
+            for (int i = 0; (i < len) && (count <= N * N); a += step, i++)
             {
                 arr[a][b] = count;
-                printf("%d ", arr[a][b]);
                 count++;
-
             }
-            
+            a -= step;
             if (step == 1)
             {
                 b++;
@@ -24,18 +22,16 @@ int main()
                 b--;
             }
             dir = 1;
-            
-            len --;
+            len--;
         }
         else
         {
-            for (int i= 0; i < len; b += step, i++)
+            for (int i = 0; (i < len) && (count <= N * N); b += step, i++)
             {
                 arr[a][b] = count;
-                printf("%d ", arr[a][b]);
                 count++;
-            
             }
+            b -= step;
             if (step == 1)
             {
                 step = -1;
@@ -47,11 +43,8 @@ int main()
                 a++;
             }
             dir = 0;
-            
         }
-        
     }
-    printf("\n");
     for (int i = 0; i < N; i++)
     {
         for (int j = 0; j < N; j++)
