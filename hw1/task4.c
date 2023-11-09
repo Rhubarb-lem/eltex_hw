@@ -2,25 +2,32 @@
 
 int main()
 {
-    int num;
-    char bit;
+    int num, bit;
     printf("Enter positive integer number:\n");
-    scanf("%d\n", &num);
-    printf("Enter value of bit:\n");
-    scanf("%c\n", &bit);
+    scanf("%d", &num);
+    printf("\n");
     if (num < 0)
     {
         printf("Wrong number!\n");
         return 0;
     }
-    printf("Changed number:");
-    if(bit){
-        printf("%d\n", num|(1<<3));
+    printf("Enter value of bit:\n");
+    scanf("%d", &bit);
+    printf("\n");
+    if (bit != 0 && bit != 1)
+    {
+        printf("Wrong value of bit!\n");
+        return 0;
     }
-    else{
-        printf("%d\n", num&~(1<<3));
+    if (bit == 1)
+    {
+        num |= 1 << 2;
     }
-    
+    else
+    {
+        num &= ~(1 << 2);
+    }
+    printf("Changed number:%d\n", num);
 
     return 0;
 }
