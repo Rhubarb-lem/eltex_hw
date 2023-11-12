@@ -1,7 +1,7 @@
 #include<stdio.h>
 
 int main(){
-    int num;
+    int num, byt;
     char bit;
     char *ptr;
     ptr = &num;
@@ -10,11 +10,11 @@ int main(){
     scanf("%d", &num);
     printf("\n");
     printf("Enter value of bit:\n");
-    scanf("%c\n", &bit);
+    scanf("%d", &byt);
     printf("\n");
 
     ptr += 2;
-    *ptr = bit;
+    *ptr = byt;
     ptr -= 2;
     for(int i = 0; i<4; i++){
         printf("%d\n", *ptr);
