@@ -6,12 +6,6 @@ struct abonent
     char second_name[10];
     char tel[10];
 };
-struct abonent *add_abonent(char *name, char *second_name, char *tel)
-{
-    struct abonent st;
-    struct abonent *ptr;
-    ptr = &st;
-}
 
 int main()
 {
