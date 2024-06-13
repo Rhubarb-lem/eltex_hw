@@ -21,12 +21,12 @@ pthread_mutex_t user_mutex = PTHREAD_MUTEX_INITIALIZER;
 void notify_all_clients(const char *message) {
     mqd_t mq_notify = mq_open(QUEUE_NAME, O_WRONLY);
     if (mq_notify == -1) {
-        perror("Server: mq_open for notify");
+        perror("Error openin queue");
         exit(1);
     }
 
     if (mq_send(mq_notify, message, strlen(message) + 1, 0) == -1) {
-        perror("Server: mq_send for notify");
+        perror("Error sending message");
         exit(1);
     }
 
@@ -40,7 +40,7 @@ void *handle_client(void *arg) {
     while (1) {
         ssize_t bytes_read = mq_receive(client_mq, buffer, MAX_SIZE, NULL);
         if (bytes_read < 0) {
-            perror("Server: mq_receive");
+            perror("Error receiving message");
             pthread_exit(NULL);
         }
         buffer[bytes_read] = '\0';
@@ -65,7 +65,7 @@ int main() {
 
     mq = mq_open(QUEUE_NAME, O_CREAT | O_RDWR, 0644, &attr);
     if (mq == -1) {
-        perror("Server: mq_open");
+        perror("Error opening queue");
         exit(1);
     }
 

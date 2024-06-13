@@ -22,11 +22,10 @@ int user_count = 0;
 
 WINDOW *msg_win, *input_win, *user_win;
 
-void init_ncurses() {
+void init_ui() {
     initscr();
     cbreak();
-    noecho();
-    curs_set(TRUE);  // Allow cursor to be visible for input
+    curs_set(FALSE);
     refresh();
     int height, width;
     getmaxyx(stdscr, height, width);
@@ -40,7 +39,7 @@ void init_ncurses() {
     box(input_win, 0, 0);
 }
 
-void close_ncurses() {
+void close_ui() {
     delwin(msg_win);
     delwin(input_win);
     delwin(user_win);
@@ -68,14 +67,14 @@ void *receive_messages(void *arg) {
     char buffer[MAX_SIZE];
     mqd_t receive_mq = mq_open(QUEUE_NAME, O_RDONLY);
     if (receive_mq == -1) {
-        perror("Client: mq_open for receive");
+        perror("Error opening queue");
         exit(1);
     }
 
     while (1) {
         ssize_t bytes_read = mq_receive(receive_mq, buffer, MAX_SIZE, NULL);
         if (bytes_read < 0) {
-            perror("Client: mq_receive");
+            perror("Error receiveng message");
             exit(1);
         }
         buffer[bytes_read] = '\0';
@@ -85,7 +84,7 @@ void *receive_messages(void *arg) {
         }
 
         if (strncmp(buffer, USER_JOINED, strlen(USER_JOINED)) == 0) {
-            pthread_mutex_lock(&user_list_mutex);
+             pthread_mutex_lock(&user_list_mutex);
             strncpy(user_list[user_count], buffer + strlen(USER_JOINED), MAX_SIZE - 1);
             user_list[user_count][MAX_SIZE - 1] = '\0';
             user_count++;
@@ -120,7 +119,7 @@ void *send_messages(void *arg) {
     char message[MAX_SIZE + 50]; // Reserve space for username
     mqd_t send_mq = mq_open(QUEUE_NAME, O_WRONLY);
     if (send_mq == -1) {
-        perror("Client: mq_open for send");
+        perror("Error opening queue");
         exit(1);
     }
 
@@ -132,7 +131,7 @@ void *send_messages(void *arg) {
 
         snprintf(message, sizeof(message), "%s: %s", username, buffer);
         if (mq_send(send_mq, message, strlen(message) + 1, 0) == -1) {
-            perror("Client: mq_send");
+            perror("Error sending message");
             exit(1);
         }
 
@@ -150,12 +149,12 @@ int main() {
     fgets(username, MAX_SIZE, stdin);
     username[strcspn(username, "\n")] = '\0'; // Remove newline character
 
-    init_ncurses();
+    init_ui();
 
     mq = mq_open(QUEUE_NAME, O_WRONLY);
     if (mq == -1) {
         perror("Client: mq_open");
-        close_ncurses();
+        close_ui();
         exit(1);
     }
 
@@ -163,7 +162,7 @@ int main() {
     snprintf(join_message, sizeof(join_message), "%s%s", USER_JOINED, username);
     if (mq_send(mq, join_message, strlen(join_message) + 1, 0) == -1) {
         perror("Client: mq_send join_message");
-        close_ncurses();
+        close_ui();
         exit(1);
     }
 
@@ -183,7 +182,7 @@ int main() {
     pthread_join(receive_thread, NULL);
 
     mq_close(mq);
-    close_ncurses();
+    close_ui();
 
     return 0;
 }
