@@ -9,15 +9,16 @@
 #include <ncurses.h>
 
 #define QUEUE_NAME "/chat_queue"
-#define MAX_SIZE 1024
+#define MAX_SIZE 1000
+#define MAX_NAME 100
 #define MSG_STOP "exit"
 #define USER_JOINED "User joined: "
 #define USER_LEFT "User left: "
 
 mqd_t mq;
-char username[MAX_SIZE];
+char username[MAX_NAME];
 pthread_mutex_t user_list_mutex = PTHREAD_MUTEX_INITIALIZER;
-char user_list[MAX_SIZE][MAX_SIZE];
+char user_list[MAX_SIZE][MAX_NAME];
 int user_count = 0;
 
 WINDOW *msg_win, *input_win, *user_win;
@@ -86,7 +87,7 @@ void *receive_messages(void *arg) {
         if (strncmp(buffer, USER_JOINED, strlen(USER_JOINED)) == 0) {
              pthread_mutex_lock(&user_list_mutex);
             strncpy(user_list[user_count], buffer + strlen(USER_JOINED), MAX_SIZE - 1);
-            user_list[user_count][MAX_SIZE - 1] = '\0';
+            user_list[user_count][MAX_NAME - 1] = '\0';
             user_count++;
             pthread_mutex_unlock(&user_list_mutex);
             update_user_list();
@@ -116,7 +117,7 @@ void *receive_messages(void *arg) {
 
 void *send_messages(void *arg) {
     char buffer[MAX_SIZE];
-    char message[MAX_SIZE + 50]; // Reserve space for username
+    char message[MAX_SIZE + 100]; 
     mqd_t send_mq = mq_open(QUEUE_NAME, O_WRONLY);
     if (send_mq == -1) {
         perror("Error opening queue");
@@ -129,7 +130,7 @@ void *send_messages(void *arg) {
         mvwgetnstr(input_win, 1, 1, buffer, MAX_SIZE - 2);
         wrefresh(input_win);
 
-        snprintf(message, sizeof(message), "%s: %s", username, buffer);
+        snprintf(message, sizeof(message)+1, "%s: %s", username, buffer);
         if (mq_send(send_mq, message, strlen(message) + 1, 0) == -1) {
             perror("Error sending message");
             exit(1);
@@ -146,8 +147,8 @@ void *send_messages(void *arg) {
 
 int main() {
     printf("Enter your username: ");
-    fgets(username, MAX_SIZE, stdin);
-    username[strcspn(username, "\n")] = '\0'; // Remove newline character
+    fgets(username, MAX_NAME, stdin);
+    username[strcspn(username, "\n")] = '\0'; 
 
     init_ui();
 
@@ -173,7 +174,7 @@ int main() {
     pthread_join(send_thread, NULL);
 
     char leave_message[MAX_SIZE];
-    snprintf(leave_message, sizeof(leave_message), "%s%s", USER_LEFT, username);
+    snprintf(leave_message, sizeof(leave_message), "%s %s", USER_LEFT, username);
     if (mq_send(mq, leave_message, strlen(leave_message) + 1, 0) == -1) {
         perror("Client: mq_send leave_message");
     }

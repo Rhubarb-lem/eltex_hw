@@ -8,7 +8,7 @@
 #include <unistd.h>
 
 #define QUEUE_NAME "/chat_queue"
-#define MAX_SIZE 1024
+#define MAX_SIZE 1000
 #define MSG_STOP "exit"
 #define USER_JOINED "User joined: "
 #define USER_LEFT "User left: "
@@ -73,7 +73,7 @@ int main() {
         char buffer[MAX_SIZE];
         ssize_t bytes_read = mq_receive(mq, buffer, MAX_SIZE, NULL);
         if (bytes_read < 0) {
-            perror("Server: mq_receive");
+            perror("Error receiving messageSS");
             exit(1);
         }
         buffer[bytes_read] = '\0';
