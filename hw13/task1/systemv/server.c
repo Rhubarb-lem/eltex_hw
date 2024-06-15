@@ -1,60 +1,48 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <mqueue.h>
-#include <fcntl.h>
-#include <sys/stat.h>
+#include <sys/ipc.h>
+#include <sys/msg.h>
 
-#define SERVER_QUEUE_NAME "/server_queue"
-#define CLIENT_QUEUE_NAME "/client_queue"
+#define SERVER_QUEUE_KEY 1234
+#define CLIENT_QUEUE_KEY 5678
 #define MAX_SIZE 1024
 
+struct message {
+    long mtype;
+    char mtext[MAX_SIZE];
+};
+
 int main() {
-    mqd_t server_mq, client_mq;
-    struct mq_attr attr;
-    char buffer[MAX_SIZE];
+    int server_qid, client_qid;
+    struct message msg;
 
-    attr.mq_flags = 0;
-    attr.mq_maxmsg = 10;
-    attr.mq_msgsize = MAX_SIZE;
-    attr.mq_curmsgs = 0;
-
-    server_mq = mq_open(SERVER_QUEUE_NAME, O_CREAT | O_WRONLY, 0644, &attr);
-    if (server_mq == -1) {
-        perror("error opening queue");
-        exit(1);
-    }
-
-   
-    strcpy(buffer, "Hi!");
-    if (mq_send(server_mq, buffer, strlen(buffer) + 1, 0) == -1) {
-        perror("error send message");
-        exit(1);
-    }
-
-   
-    mq_close(server_mq);
-
- 
-    client_mq = mq_open(CLIENT_QUEUE_NAME, O_CREAT | O_RDONLY, 0644, &attr);
-    if (client_mq == -1) {
-        perror("error opening queue");
+    server_qid = msgget(SERVER_QUEUE_KEY, IPC_CREAT | 0666);
+    if (server_qid == -1) {
+        perror("error creating server queue");
         exit(1);
     }
 
 
-    if (mq_receive(client_mq, buffer, MAX_SIZE, NULL) == -1) {
-        perror("error receive message");
+    if (msgrcv(server_qid, &msg, sizeof(msg.mtext), 0, 0) == -1) {
+        perror("error receiving message");
         exit(1);
     }
 
+    printf("Received message: %s\n", msg.mtext);
 
-    printf("Received message: %s\n", buffer);
+    client_qid = msgget(CLIENT_QUEUE_KEY, IPC_CREAT | 0666);
+    if (client_qid == -1) {
+        perror("error creating client queue");
+        exit(1);
+    }
 
-
-    mq_close(client_mq);
-    mq_unlink(SERVER_QUEUE_NAME);
-    mq_unlink(CLIENT_QUEUE_NAME);
+    msg.mtype = 1;
+    strcpy(msg.mtext, "Hello!");
+    if (msgsnd(client_qid, &msg, sizeof(msg.mtext), 0) == -1) {
+        perror("error sending message");
+        exit(1);
+    }
 
     return 0;
 }
