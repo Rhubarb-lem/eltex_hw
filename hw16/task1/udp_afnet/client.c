@@ -7,7 +7,7 @@
 #include <strings.h>
 #include <stdio.h>
 
-#define BUFLEN 81
+#define BUFLEN 10
 #define SMSG "HI!"
 #define SERVER_IP "127.0.0.1"
 #define SERVER_PORT 12345

@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#define BUFLEN 81
+#define BUFLEN 10
 #define SMSG "HI!"
 #define SOCKET_PATH "/tmp/udp_socket"
 
