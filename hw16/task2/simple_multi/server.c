@@ -12,7 +12,7 @@
 
 
 
-void* BuffWork(void* arg)
+void* ClientHandler(void* arg)
 {
     int sockClient = *((int*)arg);
     char buf[BUFLEN];
@@ -84,7 +84,7 @@ int main()
             exit(1);
         }
 
-        pthread_create(&tid, NULL, BuffWork, (void*)&sockClient);
+        pthread_create(&tid, NULL, ClientHandler, (void*)&sockClient);
         pthread_detach(tid);
     }
 
