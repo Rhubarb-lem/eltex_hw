@@ -18,7 +18,8 @@ int msgQueue;
 int freeThread[NTHREAD];
 pthread_mutex_t queueMutex = PTHREAD_MUTEX_INITIALIZER;
 
-struct msgbuf {
+struct msgbuf
+{
     long mtype;
     int sockClient;
 };
@@ -41,7 +42,7 @@ void *ClientHandler(void *arg)
             if (read_check < 0)
             {
                 fprintf(stderr, "Thread %d: Error reading: %s\n", threadIndex, strerror(errno));
-                sleep(1);  // Добавление паузы, чтобы предотвратить зацикливание на ошибке
+                sleep(1);
             }
         }
 
@@ -58,10 +59,7 @@ void *ClientHandler(void *arg)
                 {
                     printf("Client %d disconnected\n", sockClient);
                 }
-                // else
-                // {
-                //     perror("Error receiving message");
-                // }
+
                 close(sockClient);
                 break;
             }
@@ -83,7 +81,7 @@ void *ClientHandler(void *arg)
         close(sockClient);
 
         pthread_mutex_lock(&queueMutex);
-        msg.mtype = NTHREAD + 1;  // Сообщение о завершении обработки клиентом
+        msg.mtype = NTHREAD + 1;
         msg.sockClient = threadIndex;
         if (msgsnd(msgQueue, &msg, sizeof(int), 0) < 0)
         {
@@ -112,7 +110,6 @@ int main()
         freeThread[i] = 1;
     }
 
-    // Create thread pool
     for (int i = 0; i < NTHREAD; i++)
     {
         int *arg = malloc(sizeof(*arg));
@@ -182,7 +179,7 @@ int main()
             if (!found)
             {
                 struct msgbuf msg;
-                msgrcv(msgQueue, &msg, sizeof(int), NTHREAD + 1, 0);  // Ожидание завершения потока
+                msgrcv(msgQueue, &msg, sizeof(int), NTHREAD + 1, 0);
                 freeThread[msg.sockClient] = 1;
             }
         }
