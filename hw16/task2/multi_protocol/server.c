@@ -35,7 +35,7 @@ void* TCPClientHandler(void* arg)
             return NULL;
         }
 
-        printf("Sent TCP message to client: %s\n", REPLY_MSG);
+        printf("Sended TCP message to client: %s\n", REPLY_MSG);
         sleep(2);
     }
 
@@ -69,7 +69,7 @@ void* UDPClientHandler(void* arg)
             return NULL;
         }
 
-        printf("Sent UDP message to client: %s\n", REPLY_MSG);
+        printf("Sended UDP message to client: %s\n", REPLY_MSG);
         sleep(2);
     }
 
@@ -85,21 +85,21 @@ int main()
     char buf[BUFLEN];
     int opt = 1;
 
-    // Create TCP socket
+
     if ((sockTCP = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
         perror("Error creating TCP socket");
         exit(1);
     }
 
-    // Allow socket reuse
+
     if (setsockopt(sockTCP, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
     {
         perror("Error setting TCP socket option");
         exit(1);
     }
 
-    // Bind TCP socket
+
     bzero((char *)&servAddrTCP, sizeof(servAddrTCP));
     servAddrTCP.sin_family = AF_INET;
     servAddrTCP.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -111,14 +111,14 @@ int main()
         exit(1);
     }
 
-    // Listen on TCP socket
+
     if (listen(sockTCP, 5) < 0)
     {
         perror("Error listening TCP socket");
         exit(1);
     }
 
-    // Create UDP socket
+
     if ((sockUDP = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
     {
         perror("Error creating UDP socket");
@@ -144,14 +144,13 @@ int main()
         exit(1);
     }
 
-    // Create threads to handle TCP and UDP clients
+
     for (;;)
     {
         int sockClientTCP, sockClientUDP;
         struct sockaddr_in clientAddr;
         socklen_t clientLen = sizeof(clientAddr);
 
-        // Receive UDP messages
         if (recvfrom(sockUDP, buf, BUFLEN, 0, (struct sockaddr*)&clientAddr, &clientLen) < 0)
         {
             perror("Error receiving UDP message");
@@ -162,7 +161,7 @@ int main()
         pthread_create(&tidUDP, NULL, UDPClientHandler, (void*)&sockUDP);
         pthread_detach(tidUDP);
 
-        // Accept TCP connections
+
         if ((sockClientTCP = accept(sockTCP, (struct sockaddr*)&clientAddr, &clientLen)) < 0)
         {
             perror("Error accepting TCP connection");
