@@ -7,7 +7,7 @@
 #include <netinet/ip.h>
 #include <netinet/udp.h>
 
-#define BUFFER_SIZE 50
+#define BUFFER_SIZE 50 
 
 int main()
 {
