@@ -7,7 +7,7 @@
 #include <netinet/ip.h>
 #include <netinet/udp.h>
 
-#define BUFFER_SIZE 10
+#define BUFFER_SIZE 50
 
 int main()
 {
@@ -20,7 +20,7 @@ int main()
     if (sockfd < 0)
     {
         perror("Error creating socket");
-        exit(EXIT_FAILURE);
+        exit(1);
     }
 
     while (1)
@@ -29,7 +29,7 @@ int main()
         if (packet_len < 0)
         {
             perror("Error receiving packet");
-            exit(EXIT_FAILURE);
+            exit(1);
         }
         printf("%s\n", buffer);
     }
