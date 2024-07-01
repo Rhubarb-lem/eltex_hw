@@ -23,49 +23,43 @@ int main() {
         exit(EXIT_FAILURE);
     }
 
-    unsigned short src_port = htons(54321); 
-    unsigned short dst_port = htons(12345); 
-    unsigned short udp_length = htons(sizeof(struct udphdr) + strlen(SMSG));
-    unsigned short udp_checksum = 0; 
+    struct udphdr udp_header;
+    udp_header.source = htons(54321); 
+    udp_header.dest = htons(12345); 
+    udp_header.len = htons(sizeof(struct udphdr) + strlen(SMSG));
+    udp_header.check = 0; 
 
     memset(buffer, 0, BUFLEN);
-    memcpy(buffer, &src_port, 2);
-    memcpy(buffer + 2, &dst_port, 2);
-    memcpy(buffer + 4, &udp_length, 2);
-    memcpy(buffer + 6, &udp_checksum, 2);
-
+    memcpy(buffer, &udp_header, sizeof(struct udphdr));
 
     char *data = buffer + sizeof(struct udphdr);
     strcpy(data, SMSG);
 
-
     dest_addr.sin_family = AF_INET;
     dest_addr.sin_addr.s_addr = inet_addr(SERVER_IP);
 
+    // udp_header.check = checksum(buffer, sizeof(struct udphdr) + strlen(SMSG));
+    // memcpy(buffer + offsetof(struct udphdr, check), &udp_header.check, sizeof(udp_header.check));
 
     if (sendto(sockfd, buffer, sizeof(struct udphdr) + strlen(SMSG), 0, (struct sockaddr *)&dest_addr, sizeof(dest_addr)) < 0) {
-        perror("sendto failed");
+        perror("Error sending message");
         close(sockfd);
         exit(EXIT_FAILURE);
     } else {
-        printf("Packet Sent\n");
+        printf("Packet Sended!!!\n");
     }
 
     while (1) {
         int recv_len = recv(sockfd, buffer, BUFLEN, 0);
         if (recv_len < 0) {
-            perror("recv failed");
+            perror("Error receiving message");
             close(sockfd);
             exit(EXIT_FAILURE);
         }
 
-       
-        unsigned short rdst_port;
-        memcpy(&rdst_port, buffer + 20 + 2, 2);
-        rdst_port = ntohs(rdst_port);
-
-        if (rdst_port == 54321) {
-            printf("Received packet: %s\n", buffer + 20 + 8);
+        struct udphdr *udp_header_recv = (struct udphdr *)(buffer + sizeof(struct iphdr));
+        if (ntohs(udp_header_recv->dest) == 54321) {
+            printf("Received packet: %s\n", buffer + sizeof(struct iphdr) + sizeof(struct udphdr));
             break;
         }
     }
