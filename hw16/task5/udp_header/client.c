@@ -20,7 +20,7 @@ int main() {
     sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_UDP);
     if (sockfd < 0) {
         perror("socket creation failed");
-        exit(EXIT_FAILURE);
+        exit(1);
     }
 
     struct udphdr udp_header;
@@ -38,13 +38,11 @@ int main() {
     dest_addr.sin_family = AF_INET;
     dest_addr.sin_addr.s_addr = inet_addr(SERVER_IP);
 
-    // udp_header.check = checksum(buffer, sizeof(struct udphdr) + strlen(SMSG));
-    // memcpy(buffer + offsetof(struct udphdr, check), &udp_header.check, sizeof(udp_header.check));
 
     if (sendto(sockfd, buffer, sizeof(struct udphdr) + strlen(SMSG), 0, (struct sockaddr *)&dest_addr, sizeof(dest_addr)) < 0) {
         perror("Error sending message");
         close(sockfd);
-        exit(EXIT_FAILURE);
+        exit(1);
     } else {
         printf("Packet Sended!!!\n");
     }
@@ -54,12 +52,12 @@ int main() {
         if (recv_len < 0) {
             perror("Error receiving message");
             close(sockfd);
-            exit(EXIT_FAILURE);
+            exit(1);
         }
 
-        struct udphdr *udp_header_recv = (struct udphdr *)(buffer + sizeof(struct iphdr));
+        struct udphdr *udp_header_recv = (struct udphdr *)(buffer + 20);
         if (ntohs(udp_header_recv->dest) == 54321) {
-            printf("Received packet: %s\n", buffer + sizeof(struct iphdr) + sizeof(struct udphdr));
+            printf("Received packet: %s\n", buffer + 20 + 8);
             break;
         }
     }
